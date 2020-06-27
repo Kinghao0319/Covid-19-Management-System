@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>健康状况统计</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/easyui/themes/default/easyui.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/easyui/themes/icon.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/easyui/css/demo.css}">
+    <script type="text/javascript" th:src="@{/easyui/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/easyui/jquery.easyui.min.js}"></script>
+    <script type="text/javascript" th:src="@{/easyui/js/validateExtends.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+        /*<![CDATA[*/
+        $(function() {
+
+            //提前加载患者和体检信息
+            $("#examinationList").combobox({
+                width: "150",
+                height: "25",
+                valueField: "id",
+                textField: "name",
+                multiple: false, //可多选
+                editable: false, //不可编辑
+                method: "post",
+                url: [[@{/examination/getExaminationList(from=combox)}]],
+            });
+
+
+            //下拉框通用属性
+            $("#examinationList").combobox({
+                width: "200",
+                height: "30",
+                valueField: "id",
+                textField: "name",
+                multiple: false, //不可多选
+                editable: false, //不可编辑
+                method: "post",
+            });
+
+            //搜索按钮监听事件
+            $(".search-score-btn").click(function(){
+                var searchKey = $(this).attr('key');
+                var examinationId = $("#examinationList").combobox('getValue');
+                if(examinationId == null || examinationId == ''){
+                    $.messager.alert("消息提醒","请选择健康检测!","info");
+                    return;
+                }
+                $.ajax({
+                    url:   [[@{/score/getScoreStatsList}]] + "?examinationid="+examinationId+"&searchType="+searchKey,
+                    dataType:'json',
+                    success:function(rst){
+                        if(rst.type == "success"){
+                            var option;
+                            if(searchKey == 'range'){
+                                option = {
+                                    title: {
+                                        text: '健康检测：'+rst.examinationName
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            type: 'cross',
+                                            crossStyle: {
+                                                color: '#999'
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        data:['评分区间分布']
+                                    },
+                                    xAxis: {
+                                        data: rst.rangeList
+                                    },
+                                    yAxis: {type: 'value'},
+                                    series: [{
+                                        name: '评分区间分布',
+                                        type: 'bar',
+                                        data: rst.numberList
+                                    }]
+                                };
+                            }else{
+                                option = {
+                                    title: {
+                                        text: '健康检测：'+rst.examinationName
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            type: 'cross',
+                                            crossStyle: {
+                                                color: '#999'
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        data:['评分分布']
+                                    },
+                                    xAxis: {
+                                        data: rst.avgList
+                                    },
+                                    yAxis: {type: 'value'},
+                                    series: [{
+                                        name: '评分分布',
+                                        type: 'bar',
+                                        data: rst.scoreList
+                                    }]
+                                };
+                            }
+                            showCharts(option);
+                        }else{
+                            $.messager.alert("消息提醒","获取数据出错!","info");
+                        }
+                    }
+                })
+
+            });
+
+        });
+        /*]]>*/
+    </script>
+</head>
+<body style="padding:0px;">
+<div class="panel-header"><div class="panel-title panel-with-icon">评分信息统计</div><div class="panel-icon icon-more"></div><div class="panel-tool"></div></div>
+<!-- 工具栏 -->
+<div id="toolbar" class="datagrid-toolbar">
+    <div style="margin-top: 3px;">
+        健康检测：<input id="examinationList" class="easyui-textbox" name="examinationList" />
+        <a href="javascript:;" class="easyui-linkbutton search-score-btn" key="range" data-options="iconCls:'icon-sum',plain:true">区间统计图</a>
+<!--        <a href="javascript:;" class="easyui-linkbutton search-score-btn" key="avg" data-options="iconCls:'icon-sum',plain:true">平均统计图</a>-->
+    </div>
+</div>
+<div id="charts-div" style="width:100%;height:500px;"></div>
+</body>
+<script type="text/javascript" th:src="@{/easyui/js/echarts.common.min.js}"></script>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('charts-div'));
+
+    function showCharts(option){
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    }
+    // 指定图表的配置项和数据
+
+
+</script>
+</html>

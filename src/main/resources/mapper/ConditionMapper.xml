@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yhh.patientmanager.mapper.ConditionMapper">
+
+    <resultMap type="com.yhh.patientmanager.domain.Condition" id="ConditionInfo">
+        <result column="id" property="id"/>
+        <result column="patient_id" property="patient_id"/>
+        <result column="update_date" property="update_date"/>
+        <result column="this_condition" property="this_condition"/>
+
+
+        <!--        column数据库字段，property为pojo属性-->
+    </resultMap>
+
+    <select id="queryList" resultMap="ConditionInfo" >
+        SELECT s_condition.id,patient_id,username as patient_name,max(update_date) as update_date,this_condition
+        from s_patient,s_condition
+        where s_patient.id=patient_id
+        group by patient_id
+        limit #{startIndex},#{pagesize}
+    </select>
+
+    <select id="queryCount" resultType="int" >
+        select count(*) from s_condition
+
+    </select>
+
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yhh.patientmanager.mapper.ExaminationMapper">
+
+    <resultMap type="com.yhh.patientmanager.domain.Examination" id="ExaminationInfo">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="doctor_id" property="doctorId"/>
+        <result column="examination_date" property="examinationDate"/>
+        <result column="selected_num" property="selectedNum"/>
+        <result column="max_num" property="maxNum"/>
+        <result column="info" property="info"/>
+    </resultMap>
+
+    <select id="queryList" resultMap="ExaminationInfo" >
+        <!-- 根据条件查询 图书的所有信息 -->
+        SELECT *
+        from s_examination
+        <where>
+            <if test="name!=null"> and name LIKE concat("%",#{name},"%") </if>
+            <if test="doctorId!=null"> and doctor_id LIKE concat("%",#{doctorId},"%") </if>
+        </where>
+        limit #{startIndex},#{pagesize}
+    </select>
+
+    <select id="queryCount" resultType="int" >
+        select count(*) from s_examination
+        <where>
+            <if test="name!=null"> and name LIKE concat("%",#{name},"%") </if>
+            <if test="doctorId!=null"> and doctor_id LIKE concat("%",#{doctorId},"%") </if>
+        </where>
+    </select>
+
+    <insert id="addExamination" parameterType="Examination">
+        insert into s_examination(name,doctor_id,examination_date,max_num,info)
+        values(#{name},#{doctorId},#{examinationDate},#{maxNum},#{info})
+    </insert>
+
+    <delete id="deleteExamination" parameterType="java.util.ArrayList">
+        delete from s_examination
+        <where>
+            id in
+            <foreach collection="list" open="(" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+    </delete>
+
+    <update id="editExamination" parameterType="Examination">
+        update s_examination set name = #{name},doctor_id = #{doctorId},examination_date = #{examinationDate},max_num = #{maxNum},info = #{info} where id = #{id}
+    </update>
+
+    <update id="addPatientNum" parameterType="int">
+         update s_examination
+         set selected_num = (case
+            when selected_num = max_num then 50
+            when selected_num &lt; max_num then selected_num+1
+            end
+         )
+         where id = #{examinationId}
+    </update>
+
+    <update id="deletePatientNum" parameterType="int">
+         update s_examination
+         set selected_num = selected_num-1
+         where id = #{examinationId}
+    </update>
+
+    <select id="getExaminationById" parameterType="java.util.List" resultType="Examination">
+        select *
+        from s_examination
+        <where>
+            id in
+            <foreach collection="list" open="(" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findByName" parameterType="java.lang.String" resultType="int">
+        select id from s_examination where name = #{name}
+    </select>
+
+</mapper>

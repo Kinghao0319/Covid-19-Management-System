@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yhh.patientmanager.mapper.PatientMapper">
+
+    <resultMap type="com.yhh.patientmanager.domain.Patient" id="PatientInfo">
+        <result column="id" property="id"/>
+        <result column="pnum" property="pnum"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="hospital_id" property="hospitalId"/>
+        <result column="sex" property="sex"/>
+        <result column="age" property="age"/>
+        <result column="mobile" property="mobile"/>
+        <result column="qq" property="qq"/>
+        <result column="cur_condition" property="cur_condition"/>
+        <result column="photo" property="photo"/>
+<!--        column数据库字段，property为pojo属性-->
+    </resultMap>
+
+    <select id="queryList" resultMap="PatientInfo" >
+        <!-- 根据条件查询 图书的所有信息 -->
+        SELECT *
+        from s_patient
+        <where>
+            <if test="username!=null"> and username LIKE concat("%",#{username},"%") </if>
+            <if test="hospitalid!=null"> and hospital_id LIKE concat("%",#{hospitalid},"%") </if>
+            <if test="patientid!=null"> and id = #{patientid} </if>
+        </where>
+        limit #{startIndex},#{pagesize}
+    </select>
+
+    <select id="queryCount" resultType="int" >
+        select count(*) from s_patient
+        <where>
+            <if test="username!=null"> and username LIKE concat("%",#{username},"%") </if>
+            <if test="hospitalid!=null"> and hospital_id LIKE concat("%",#{hospitalid},"%") </if>
+            <if test="patientid!=null"> and id = #{patientid} </if>
+        </where>
+    </select>
+
+    <insert id="addPatient" parameterType="Patient">
+        insert into s_patient(pnum,username,password,hospital_id,sex,age,mobile,qq,cur_condition,photo)
+        values(#{pnum},#{username},#{password},#{hospitalId},#{sex},#{age},#{mobile},#{qq},#{cur_condition},#{photo})
+    </insert>
+
+    <delete id="deletePatient" parameterType="java.util.ArrayList">
+        delete from s_patient
+        <where>
+            id in
+            <foreach collection="list" open="(" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </where>
+    </delete>
+
+    <update id="editPatient" parameterType="Patient">
+        update s_patient
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="hospitalId != null">
+                hospital_id = #{hospitalId},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="mobile != null">
+                mobile = #{mobile},
+            </if>
+            <if test="qq != null">
+                qq = #{qq},
+            </if>
+            <if test="cur_condition != null">
+                cur_condition = #{cur_condition},
+            </if>
+            <if test="photo != null">
+                photo = #{photo},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <select id="findById" parameterType="int" resultType="Patient">
+        select * from s_patient where id = #{sid}
+    </select>
+
+    <select id="findByPatient" parameterType="Patient" resultType="Patient">
+        select * from s_patient where username = #{username} and password = #{password}
+    </select>
+
+    <select id="isPatientByHospitalId" parameterType="int" resultMap="PatientInfo">
+        select * from s_patient where hospital_id = #{id}
+    </select>
+
+    <update id="editPswdByPatient" parameterType="Patient">
+        update  s_patient set password = #{password} where id = #{id}
+    </update>
+
+    <select id="findByName" parameterType="java.lang.String" resultType="int">
+        select id from s_patient where username = #{name}
+    </select>
+
+</mapper>
